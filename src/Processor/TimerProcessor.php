@@ -33,7 +33,7 @@ class TimerProcessor
      */
     public function __invoke(array $record)
     {
-        if (!isset($record['context']['timer']) || !is_array($record['context']['timer'])) {
+        if (!isset($record['context']['timer']) || !is_string($record['context']['timer'])) {
             return $record;
         }
 
