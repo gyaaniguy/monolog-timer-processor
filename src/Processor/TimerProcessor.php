@@ -57,17 +57,18 @@ class TimerProcessor
 
     /**
      * @param $timerName
-     * @return string
+     * @return array
      */
     private function handleTimer($timerName)
     {
+        $out =[];
         if (!isset($this->timers[$timerName])) {
             $this->timers[$timerName] = [
                 'lastTime' => null,
                 'count' => 0,
                 'start' => microtime(true)
             ];
-            $timerName .= ': Start';
+            $out[$timerName] = ['Start'];
 
         } else {
             if (isset($this->timers[$timerName]['start'])) {
@@ -80,13 +81,15 @@ class TimerProcessor
                 $this->timers[$timerName]['lastTime'] = $currentTime;
                 $this->timers[$timerName]['count']++;
 
+                $res['Start'] = '';
+                $res['TotalTime'] = $sinceStart;
+                $res['SinceLast'] = $sinceLast;
+                $res['Count'] = $this->timers[$timerName]['count'];
 
-                $timerName .= ': Start';
-                $timerName .= ': TotalTime:' . $sinceStart;
-                $timerName .= ': SinceLast:' . $sinceLast;
-                $timerName .= ': Count:' . $this->timers[$timerName]['count'];
+                $out[$timerName] = $res;
+
             }
         }
-        return $timerName;
+        return $out;
     }
 }
