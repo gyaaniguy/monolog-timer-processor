@@ -1,9 +1,10 @@
 {
-  "name": "gyaaniguy/monolog-timer-processor",
+  "name": "Gyaaniguy/monolog-timer-processor",
   "description": "A processor for Monolog that adds timing info with loop",
   "keywords": ["log", "logger", "monolog", "processor", "timer"],
   "homepage": "https://github.com/glopgar/monolog-timer-processor",
   "type": "library",
+  "version": "1.0.2",
   "license": "MIT",
   "authors": [
     {
