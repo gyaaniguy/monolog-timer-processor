@@ -24,7 +24,7 @@ class TimerProcessor
      */
     public function __construct($timerPrecision = 2)
     {
-        $this->timerPrecision = 2;
+        $this->timerPrecision = 3;
     }
 
     /**
@@ -41,8 +41,8 @@ class TimerProcessor
             foreach ($record['context']['timer'] as &$timerName) {
                 $timerName = $this->handleTimer($timerName);
             }
-        } elseif (is_string(!isset($record['context']['timer']))) {
-            $record['context']['timer'] = $this->handleTimer($record['context']['timer']);
+        } elseif (is_string($record['context']['timer']) && $record['context']['timer']) {
+            $record['context']['timer'] = [$this->handleTimer($record['context']['timer'])];
         }
         return $record;
     }
@@ -61,7 +61,7 @@ class TimerProcessor
      */
     private function handleTimer($timerName)
     {
-        $out =[];
+        $out = [];
         if (!isset($this->timers[$timerName])) {
             $this->timers[$timerName] = [
                 'lastTime' => null,
@@ -71,24 +71,20 @@ class TimerProcessor
             $out[$timerName] = ['Start'];
 
         } else {
-            if (isset($this->timers[$timerName]['start'])) {
-                $currentTime = microtime(true);
-                $lastTime = !empty($this->timers[$timerName]['lastTime']) ? $this->timers[$timerName]['lastTime'] : $this->timers[$timerName]['start'];
+            $currentTime = microtime(true);
+            $lastTime = !empty($this->timers[$timerName]['lastTime']) ? $this->timers[$timerName]['lastTime'] : $this->timers[$timerName]['start'];
 
-                $sinceStart = $currentTime - $this->timers[$timerName]['start'];
-                $sinceLast = $currentTime - $lastTime;
+            $sinceStart = $currentTime - $this->timers[$timerName]['start'];
+            $sinceLast = $currentTime - $lastTime;
 
-                $this->timers[$timerName]['lastTime'] = $currentTime;
-                $this->timers[$timerName]['count']++;
+            $this->timers[$timerName]['lastTime'] = $currentTime;
+            $this->timers[$timerName]['count']++;
 
-                $res['Start'] = '';
-                $res['TotalTime'] = $sinceStart;
-                $res['SinceLast'] = $sinceLast;
-                $res['Count'] = $this->timers[$timerName]['count'];
+            $res['Total'] = number_format($sinceStart, $this->timerPrecision);
+            $res['SinceLast'] = number_format($sinceLast, $this->timerPrecision);
+            $res['Count'] = $this->timers[$timerName]['count'];
 
-                $out[$timerName] = $res;
-
-            }
+            $out[$timerName] = $res;
         }
         return $out;
     }
