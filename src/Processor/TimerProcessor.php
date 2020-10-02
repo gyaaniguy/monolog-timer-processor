@@ -1,6 +1,6 @@
 <?php
 
-namespace Glopgar\Monolog\Processor;
+namespace Gyaaniguy\Monolog\Processor;
 
 /**
  * Class TimerProcessor
@@ -28,7 +28,7 @@ class TimerProcessor
     }
 
     /**
-     * @param  array $record
+     * @param array $record
      * @return array
      */
     public function __invoke(array $record)
@@ -37,42 +37,35 @@ class TimerProcessor
             return $record;
         }
 
+        foreach ($record['context']['timer'] as &$timerName) {
 
-        foreach ($record['context']['timer'] as $timer => &$timerInfo) {
+            if (!isset($this->timers[$timerName])) {
+                $this->timers[$timerName] = [
+                    'lastTime' => null,
+                    'count' => 0,
+                    'start' => microtime(true)
+                ];
+                $timerName .= ': Start';
 
-            if ('start' === $timerInfo) {
+            } else {
+                if (isset($this->timers[$timerName]['start'])) {
+                    $currentTime = microtime(true);
+                    $lastTime = !empty($this->timers[$timerName]['lastTime']) ? $this->timers[$timerName]['lastTime'] : $this->timers[$timerName]['start'];
 
-                if (! isset($this->timers[$timer])) {
-                    $this->timers[$timer] = array(
-                        'totalTime' => null,
-                        'count' => 0
-                    );
+                    $sinceStart = $currentTime - $this->timers[$timerName]['start'];
+                    $sinceLast = $currentTime - $lastTime;
+
+                    $this->timers[$timerName]['lastTime'] = $currentTime;
+                    $this->timers[$timerName]['count']++ ;
+
+
+                    $timerName .= ': Start';
+                    $timerName .= ': TotalTime:'.$sinceStart;
+                    $timerName .= ': SinceLast:'.$sinceLast;
+                    $timerName .= ': Count:'.$this->timers[$timerName]['count'];
                 }
-                $this->timers[$timer]['start'] = microtime(true);
-
-            } else if ('stop' === $timerInfo) {
-
-                if (isset($this->timers[$timer]['start'])) {
-                    $time = microtime(true) - $this->timers[$timer]['start'];
-                    unset($this->timers[$timer]['start']);
-                    $totalTime = $this->timers[$timer]['totalTime'] + $time;
-                    $this->timers[$timer]['totalTime'] += $time;
-                    $count = $this->timers[$timer]['count'] + 1;
-                } else {
-                    $time = $totalTime = null;
-                    $this->timers[$timer]['totalTime'] = null;
-                    $count = 0;
-                }
-
-                $timerInfo = array(
-                    'time' => null === $time ? null : number_format($time, $this->timerPrecision),
-                    'totalTime' => null === $totalTime ? null : number_format($totalTime, $this->timerPrecision),
-                    'count' => $count
-                );
-                $this->timers[$timer]['count'] = $count;
             }
         }
-
         return $record;
     }
 
