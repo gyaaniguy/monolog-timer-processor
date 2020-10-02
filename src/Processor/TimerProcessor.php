@@ -33,38 +33,16 @@ class TimerProcessor
      */
     public function __invoke(array $record)
     {
-        if (!isset($record['context']['timer']) || !is_string($record['context']['timer'])) {
+        if (!isset($record['context']['timer'])) {
             return $record;
         }
 
-        foreach ($record['context']['timer'] as &$timerName) {
-
-            if (!isset($this->timers[$timerName])) {
-                $this->timers[$timerName] = [
-                    'lastTime' => null,
-                    'count' => 0,
-                    'start' => microtime(true)
-                ];
-                $timerName .= ': Start';
-
-            } else {
-                if (isset($this->timers[$timerName]['start'])) {
-                    $currentTime = microtime(true);
-                    $lastTime = !empty($this->timers[$timerName]['lastTime']) ? $this->timers[$timerName]['lastTime'] : $this->timers[$timerName]['start'];
-
-                    $sinceStart = $currentTime - $this->timers[$timerName]['start'];
-                    $sinceLast = $currentTime - $lastTime;
-
-                    $this->timers[$timerName]['lastTime'] = $currentTime;
-                    $this->timers[$timerName]['count']++ ;
-
-
-                    $timerName .= ': Start';
-                    $timerName .= ': TotalTime:'.$sinceStart;
-                    $timerName .= ': SinceLast:'.$sinceLast;
-                    $timerName .= ': Count:'.$this->timers[$timerName]['count'];
-                }
+        if (is_array($record['context']['timer'])) {
+            foreach ($record['context']['timer'] as &$timerName) {
+                $timerName = $this->handleTimer($timerName);
             }
+        } elseif (is_string(!isset($record['context']['timer']))) {
+            $record['context']['timer'] = $this->handleTimer($record['context']['timer']);
         }
         return $record;
     }
@@ -75,5 +53,40 @@ class TimerProcessor
     public function getTimers()
     {
         return $this->timers;
+    }
+
+    /**
+     * @param $timerName
+     * @return string
+     */
+    private function handleTimer($timerName)
+    {
+        if (!isset($this->timers[$timerName])) {
+            $this->timers[$timerName] = [
+                'lastTime' => null,
+                'count' => 0,
+                'start' => microtime(true)
+            ];
+            $timerName .= ': Start';
+
+        } else {
+            if (isset($this->timers[$timerName]['start'])) {
+                $currentTime = microtime(true);
+                $lastTime = !empty($this->timers[$timerName]['lastTime']) ? $this->timers[$timerName]['lastTime'] : $this->timers[$timerName]['start'];
+
+                $sinceStart = $currentTime - $this->timers[$timerName]['start'];
+                $sinceLast = $currentTime - $lastTime;
+
+                $this->timers[$timerName]['lastTime'] = $currentTime;
+                $this->timers[$timerName]['count']++;
+
+
+                $timerName .= ': Start';
+                $timerName .= ': TotalTime:' . $sinceStart;
+                $timerName .= ': SinceLast:' . $sinceLast;
+                $timerName .= ': Count:' . $this->timers[$timerName]['count'];
+            }
+        }
+        return $timerName;
     }
 }
