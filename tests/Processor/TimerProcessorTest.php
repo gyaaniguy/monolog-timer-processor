@@ -151,16 +151,14 @@ class TimerProcessorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             array(
                 'foo' => array(
-                    'totalTime' => 2,
-                    'count' => 1
+                    'Total' => 5,
+                    'SinceLast' => 3,
+                    'Count' => 4
                 ),
                 'bar' => array(
-                    'totalTime' => 3,
-                    'count' => 1
-                ),
-                'baz' => array(
-                    'totalTime' => 2,
-                    'count' => 1
+                    'Total' => 2,
+                    'SinceLast' => 2,
+                    'Count' => 2
                 )
             ),
             $sut->getTimers()
@@ -172,25 +170,26 @@ class TimerProcessorTest extends \PHPUnit_Framework_TestCase
         $sut = $this->configureSut();
 
         MicrotimeStub::setMicrotime(1470000000);
-        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('foo' => 'start')));
+        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('foo')));
 
         MicrotimeStub::setMicrotime(1470000001);
-        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('foo' => 'stop')));
+        $this->logger->log(Logger::DEBUG, "test", array('timer' => 'foo'));
 
-        MicrotimeStub::setMicrotime(1470000002);
-        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('foo' => 'start')));
+        MicrotimeStub::setMicrotime(1470000004);
+        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('foo')));
+        MicrotimeStub::setMicrotime(1470000007);
+        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('foo')));
 
-        MicrotimeStub::setMicrotime(1470000003);
-        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('foo' => 'stop')));
 
         $records = $this->testHandler->getRecords();
         $this->assertEquals(
             array(
                 'timer' => array(
                     'foo' => array(
-                        'time' => 1,
-                        'totalTime' => 2,
-                        'count' => 2
+                        'Total' => 7,
+                        'SinceLast' => 3,
+                        'Count' => 4
+
                     )
                 )
             ),
@@ -200,61 +199,13 @@ class TimerProcessorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             array(
                 'foo' => array(
-                    'totalTime' => 2,
-                    'count' => 2
+                    'Total' => 7,
+                    'SinceLast' => 3,
+                    'Count' => 4
                 )
             ),
             $sut->getTimers()
         );
     }
 
-    public function testNotStarted()
-    {
-        $sut = $this->configureSut();
-
-        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('foo' => 'stop')));
-
-        $records = $this->testHandler->getRecords();
-        $this->assertEquals(
-            array(
-                'timer' => array(
-                    'foo' => array(
-                        'time' => null,
-                        'totalTime' => null,
-                        'count' => 0
-                    )
-                )
-            ),
-            $records[0]['context']
-        );
-
-        $this->assertEquals(
-            array(
-                'foo' => array(
-                    'totalTime' => null,
-                    'count' => 0
-                )
-            ),
-            $sut->getTimers()
-        );
-    }
-
-    public function testNotStopped()
-    {
-        $sut = $this->configureSut();
-
-        MicrotimeStub::setMicrotime(1470000000);
-        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('foo' => 'start')));
-
-        $this->assertEquals(
-            array(
-                'foo' => array(
-                    'start' => 1470000000,
-                    'totalTime' => null,
-                    'count' => 0
-                )
-            ),
-            $sut->getTimers()
-        );
-    }
 }
