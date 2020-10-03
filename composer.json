@@ -1,5 +1,5 @@
 {
-  "name": "Gyaaniguy/monolog-timer-processor",
+  "name": "gyaaniguy/monolog-timer-processor",
   "description": "A processor for Monolog that adds timing info with loop",
   "keywords": ["log", "logger", "monolog", "processor", "timer"],
   "homepage": "https://github.com/glopgar/monolog-timer-processor",
@@ -12,10 +12,16 @@
       "email": "nik.jain@gmail.com"
     }
   ],
+  "require": {
+    "monolog/monolog": "^1.17"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^4.8"
+  },
   "autoload": {
-      "psr-4": {"Gyaaniguy\\Monolog\\": "src/"}
+      "psr-4": {"gyaaniguy\\Monolog\\": "src/"}
   },
   "autoload-dev": {
-    "psr-4": {"Gyaaniguy\\Monolog\\": "tests/"}
+    "psr-4": {"gyaaniguy\\Monolog\\": "tests/"}
   }
 }
