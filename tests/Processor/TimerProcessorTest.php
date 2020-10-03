@@ -1,6 +1,6 @@
 <?php
 
-namespace gyaaniguy\Monolog\Processor;
+namespace Gyaaniguy\Monolog\Processor;
 
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
