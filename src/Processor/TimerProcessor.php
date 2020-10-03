@@ -38,11 +38,15 @@ class TimerProcessor
         }
 
         if (is_array($record['context']['timer'])) {
-            foreach ($record['context']['timer'] as &$timerName) {
-                $timerName = $this->handleTimer($timerName);
+            $originalTimer = $record['context']['timer'];
+            $newTimer = [];
+            foreach ($originalTimer as &$timerName) {
+                $newTimer[$timerName] = $this->handleTimer($timerName);
             }
+            $record['context']['timer'] = $newTimer;
         } elseif (is_string($record['context']['timer']) && $record['context']['timer']) {
-            $record['context']['timer'] = [$this->handleTimer($record['context']['timer'])];
+            $originalTimer = $record['context']['timer'];
+            $record['context']['timer'] = [$originalTimer => $this->handleTimer($originalTimer)];
         }
         return $record;
     }
@@ -61,14 +65,13 @@ class TimerProcessor
      */
     private function handleTimer($timerName)
     {
-        $out = [];
         if (!isset($this->timers[$timerName])) {
             $this->timers[$timerName] = [
                 'lastTime' => null,
-                'count' => 0,
+                'count' => 1,
                 'start' => microtime(true)
             ];
-            $out[$timerName] = ['Start'];
+            $out = ['Start'];
 
         } else {
             $currentTime = microtime(true);
@@ -80,12 +83,21 @@ class TimerProcessor
             $this->timers[$timerName]['lastTime'] = $currentTime;
             $this->timers[$timerName]['count']++;
 
-            $res['Total'] = number_format($sinceStart, $this->timerPrecision);
-            $res['SinceLast'] = number_format($sinceLast, $this->timerPrecision);
+            $res['Total'] = $this->trailingZeros(number_format($sinceStart, $this->timerPrecision));
+            $res['SinceLast'] = $this->trailingZeros(number_format($sinceLast, $this->timerPrecision));
             $res['Count'] = $this->timers[$timerName]['count'];
 
-            $out[$timerName] = $res;
+            $out = $res;
         }
         return $out;
+    }
+
+    function trailingZeros($num)
+    {
+        if(floor($num) == $num) {
+            return number_format($num);
+        } else {
+            return $num;
+        }
     }
 }
