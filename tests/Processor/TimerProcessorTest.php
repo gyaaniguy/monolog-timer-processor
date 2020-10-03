@@ -1,6 +1,6 @@
 <?php
 
-namespace Glopgar\Monolog\Processor;
+namespace gyaaniguy\Monolog\Processor;
 
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
@@ -78,36 +78,25 @@ class TimerProcessorTest extends \PHPUnit_Framework_TestCase
     public function testTimer()
     {
         $sut = $this->configureSut();
-
         MicrotimeStub::setMicrotime(1470000000);
-        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('foo' => 'start')));
-
+        $this->logger->log(Logger::DEBUG, "test", ['timer' => ['tag1']]);
         MicrotimeStub::setMicrotime(1470000001);
-        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('foo' => 'stop')));
+        $this->logger->log(Logger::DEBUG, "test", ['timer' => ['tag1']]);
 
         $records = $this->testHandler->getRecords();
         $this->assertEquals(
             array(
-                'timer' => array(
-                    'foo' => array(
-                        'time' => 1,
-                        'totalTime' => 1,
-                        'count' => 1
-                    )
-                )
+                'timer' => [
+                    'tag1' => [
+                        'Total' => 1,
+                        'SinceLast' => 1,
+                        'Count' => 2,
+                    ]
+                ]
             ),
             $records[1]['context']
         );
 
-        $this->assertEquals(
-            array(
-                'foo' => array(
-                    'totalTime' => 1,
-                    'count' => 1
-                )
-            ),
-            $sut->getTimers()
-        );
     }
 
     public function testMultipleTimers()
@@ -115,44 +104,44 @@ class TimerProcessorTest extends \PHPUnit_Framework_TestCase
         $sut = $this->configureSut();
 
         MicrotimeStub::setMicrotime(1470000000);
-        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('foo' => 'start', 'bar' => 'start')));
+        $this->logger->log(Logger::DEBUG, "test", array('timer' => ['foo','bar']));
 
         MicrotimeStub::setMicrotime(1470000001);
-        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('baz' => 'start')));
+        $this->logger->log(Logger::DEBUG, "test", array('timer' => ['foo']));
 
         MicrotimeStub::setMicrotime(1470000002);
-        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('foo' => 'stop')));
+        $this->logger->log(Logger::DEBUG, "test", array('timer' => ['foo','bar']));
 
         $records = $this->testHandler->getRecords();
         $this->assertEquals(
             array(
                 'timer' => array(
                     'foo' => array(
-                        'time' => 2,
-                        'totalTime' => 2,
-                        'count' => 1
+                        'Total' => 2,
+                        'SinceLast' => 1,
+                        'Count' => 3
+                    ),
+                    'bar' => array(
+                        'Total' => 2,
+                        'SinceLast' => 2,
+                        'Count' => 2
                     )
                 )
             ),
             $records[2]['context']
         );
 
-        MicrotimeStub::setMicrotime(1470000003);
-        $this->logger->log(Logger::DEBUG, "test", array('timer' => array('bar' => 'stop', 'baz' => 'stop')));
+        MicrotimeStub::setMicrotime(1470000005);
+        $this->logger->log(Logger::DEBUG, "test", array('timer' => 'foo'));
 
         $records = $this->testHandler->getRecords();
         $this->assertEquals(
             array(
                 'timer' => array(
-                    'bar' => array(
-                        'time' => 3,
-                        'totalTime' => 3,
-                        'count' => 1
-                    ),
-                    'baz' => array(
-                        'time' => 2,
-                        'totalTime' => 2,
-                        'count' => 1
+                    'foo' => array(
+                        'Total' => 5,
+                        'SinceLast' => 3,
+                        'Count' => 4
                     )
                 )
             ),
