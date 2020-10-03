@@ -16,6 +16,7 @@ class TimerProcessor
     /**
      * @var array
      */
+    private $storePreviousData = array();
     private $timers = array();
 
     /**
@@ -65,8 +66,8 @@ class TimerProcessor
      */
     private function handleTimer($timerName)
     {
-        if (!isset($this->timers[$timerName])) {
-            $this->timers[$timerName] = [
+        if (!isset($this->storePreviousData[$timerName])) {
+            $this->storePreviousData[$timerName] = [
                 'lastTime' => null,
                 'count' => 1,
                 'start' => microtime(true)
@@ -74,21 +75,23 @@ class TimerProcessor
             $out = ['Start'];
 
         } else {
+            $res =[];
             $currentTime = microtime(true);
-            $lastTime = !empty($this->timers[$timerName]['lastTime']) ? $this->timers[$timerName]['lastTime'] : $this->timers[$timerName]['start'];
+            $lastTime = !empty($this->storePreviousData[$timerName]['lastTime']) ? $this->storePreviousData[$timerName]['lastTime'] : $this->storePreviousData[$timerName]['start'];
 
-            $sinceStart = $currentTime - $this->timers[$timerName]['start'];
+            $sinceStart = $currentTime - $this->storePreviousData[$timerName]['start'];
             $sinceLast = $currentTime - $lastTime;
 
-            $this->timers[$timerName]['lastTime'] = $currentTime;
-            $this->timers[$timerName]['count']++;
+            $this->storePreviousData[$timerName]['lastTime'] = $currentTime;
+            $this->storePreviousData[$timerName]['count']++;
 
-            $res['Total'] = $this->trailingZeros(number_format($sinceStart, $this->timerPrecision));
-            $res['SinceLast'] = $this->trailingZeros(number_format($sinceLast, $this->timerPrecision));
-            $res['Count'] = $this->timers[$timerName]['count'];
+            $res['Total'] = number_format($sinceStart, $this->timerPrecision);
+            $res['SinceLast'] = number_format($sinceLast, $this->timerPrecision);
+            $res['Count'] = $this->storePreviousData[$timerName]['count'];
 
             $out = $res;
         }
+        $this->timers[$timerName] = $out;
         return $out;
     }
 
